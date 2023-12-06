@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "Hash": "By4K0eARmLgd2ujaVwGjPTFk1ey7Xnb5YJPUT+z96Qw=",
+  "Source": "lab6",
+  "BasePath": "_content/lab6",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "lab6\\wwwroot",
+      "Source": "lab6",
+      "ContentRoot": "D:\\3\\SQL\\lab6\\lab6\\wwwroot\\",
+      "BasePath": "_content/lab6",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "D:\\3\\SQL\\lab6\\lab6\\wwwroot\\index.html",
+      "SourceId": "lab6",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\3\\SQL\\lab6\\lab6\\wwwroot\\",
+      "BasePath": "_content/lab6",
+      "RelativePath": "index.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\index.html"
+    }
+  ]
+}

@@ -1,0 +1,280 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Путёвки</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.0/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <h2>Путёвки</h2>
+    <form name="voucher">
+        <label for="operationId" id="typeCRUD" name="typeCRUD">Добавить:</label>
+        <input type="hidden" name="id" value="0" />
+        <div class="form-group col-md-5">
+            <label for="startDate">Начало:</label>
+            <input class="form-control" name="startDate" type="date" />
+        </div>
+        <div class="form-group col-md-5">
+            <label for="expirationDate">Окончание:</label>
+            <input class="form-control" name="expirationDate" type="date" />
+        </div>
+        <div class="form-group col-md-5">
+            <label for="additionalService">Доп. услуга:</label>
+            <select id="additionalServiceId" name="additionalServiceId"></select>
+        </div>
+        <div class="form-group col-md-5">
+            <label for="employess">Сотрудник:</label>
+            <select id="employessId" name="employessId"></select>
+        </div>
+        <div class="form-group col-md-5">
+            <label for="reservation">Резервирование:</label>
+            <input class="form-control" name="reservation" type="checkbox" />
+        </div>
+        <div class="form-group col-md-5">
+            <label for="payment">Оплата:</label>
+            <input class="form-control" name="payment" type="checkbox" />
+        </div>
+        <div class="panel-body">
+            <button type="submit" id="submit" class="btn btn-primary">Сохранить</button>
+            <a id="reset" class="btn btn-primary">Сбросить</a>
+        </div>
+    </form>
+    <table class="table table-condensed table-striped  col-md-6">
+        <thead><tr><th>Id</th><th>Начало</th><th>Окончание</th><th>Доп. услуга</th><th>Сотрудник</th><th>Резервирование</th><th>Оплата</th><th></th></tr></thead>
+        <tbody id="data"></tbody>
+    </table>
+    <div>2019 © Metanit.com</div>
+    <script>
+        // сброс формы
+        function reset() {
+            var form = document.forms["voucher"];
+            form.reset();
+            form.elements["id"].value = 0;
+            document.getElementById("typeCRUD").innerHTML = "Добавить:";
+        }
+        async function GetVouchers() {
+            // отправляет запрос и получаем ответ
+            const response = await fetch("/api/voucher", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            // если запрос прошел нормально
+            if (response.ok === true) {
+                // получаем данные
+                const vouchers = await response.json();
+                let rows = document.querySelector("table tbody#data");
+                vouchers.forEach(voucher => rows.append(row(voucher)));
+            }
+        }
+        // Получение одного пользователя
+        async function GetVoucher(id) {
+            const response = await fetch("/api/voucher/" + id, {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const voucher = await response.json();
+                const form = document.forms["voucher"];
+                form.elements["id"].value = voucher.id;
+                form.elements["startDate"].value = voucher.startDate.substring(0, 10);
+                form.elements["expirationDate"].value = voucher.expirationDate.substring(0, 10);
+                form.elements["additionalServiceId"].value = voucher.additionalServiceId;
+                form.elements["employessId"].value = voucher.employessId;
+                form.elements["reservation"].checked = voucher.reservation;
+                form.elements["payment"].checked = voucher.payment;
+            }
+        }
+        // Добавление пользователя
+        async function CreateVoucher(StartDate, ExpirationDate, AdditionalServiceId, EmployessId, Reservation, Payment) {
+            const response = await fetch("api/voucher", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: 0,
+                    startDate: new Date(StartDate).toISOString(),
+                    expirationDate: new Date(ExpirationDate).toISOString(),
+                    additionalServiceId: parseInt(AdditionalServiceId, 10),
+                    employessId: parseInt(EmployessId, 10),
+                    reservation: Reservation == "on" ? true : false,
+                    payment: Payment == "on" ? true : false,
+                })
+            });
+            if (response.ok === true) {
+                const voucher = await response.json();
+                reset();
+                document.querySelector("tbody").append(row(voucher));
+            }
+        }
+        // Изменение пользователя
+        async function EditVoucher(Id, StartDate, ExpirationDate, AdditionalServiceId, EmployessId, Reservation, Payment) {
+            const response = await fetch("api/voucher", {
+                method: "PUT",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: parseInt(Id, 10),
+                    startDate: new Date(StartDate).toISOString(),
+                    expirationDate: new Date(ExpirationDate).toISOString(),
+                    additionalServiceId: parseInt(AdditionalServiceId, 10),
+                    employessId: parseInt(EmployessId, 10),
+                    reservation: Reservation == "on" ? true : false,
+                    payment: Payment == "on" ? true : false,
+                })
+            });
+            if (response.ok === true) {
+                const voucher = await response.json();
+                reset();
+                document.querySelector("tr[data-rowid='" + voucher.id + "']").replaceWith(row(voucher));
+            }
+        }
+        // Удаление пользователя
+        async function DeleteVoucher(id) {
+            const response = await fetch("/api/voucher/" + id, {
+                method: "DELETE",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const voucher = await response.json();
+                document.querySelector("tr[data-rowid='" + voucher.id + "']").remove();
+            }
+        }
+
+        // сброс формы
+        function reset() {
+            const form = document.forms["voucher"];
+            form.reset();
+            form.elements["id"].value = 0;
+        }
+        // создание строки для таблицы
+        function row(voucher) {
+
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", voucher.id);
+
+            const idTd = document.createElement("td");
+            idTd.append(voucher.id);
+            tr.append(idTd);
+
+            const startDateTd = document.createElement("td");
+            startDateTd.append(voucher.startDate);
+            tr.append(startDateTd);
+
+            const expirationDateTd = document.createElement("td");
+            expirationDateTd.append(voucher.expirationDate);
+            tr.append(expirationDateTd);
+
+            const additionalServiceTd = document.createElement("td");
+            additionalServiceTd.append(voucher.additionalService.name);
+            tr.append(additionalServiceTd);
+
+            const employessTd = document.createElement("td");
+            employessTd.append(voucher.employess.fio);
+            tr.append(employessTd);
+
+            const reservationTd = document.createElement("td");
+            reservationTd.append(voucher.reservation);
+            tr.append(reservationTd);
+
+            const paymentTd = document.createElement("td");
+            paymentTd.append(voucher.payment);
+            tr.append(paymentTd);
+
+            const linksTd = document.createElement("td");
+
+            const editLink = document.createElement("a");
+            editLink.setAttribute("data-id", voucher.id);
+            editLink.setAttribute("style", "cursor:pointer;padding:15px;");
+            editLink.append("Изменить");
+            editLink.addEventListener("click", async () => await Edit(voucher.id)
+            );
+            linksTd.append(editLink);
+
+            const removeLink = document.createElement("a");
+            removeLink.setAttribute("data-id", voucher.id);
+            removeLink.setAttribute("style", "cursor:pointer;padding:15px;");
+            removeLink.append("Удалить");
+            removeLink.addEventListener("click", async () => await Delete(voucher.id)
+            );
+
+            linksTd.append(removeLink);
+            tr.appendChild(linksTd);
+
+            return tr;
+        }
+        // сброс значений формы
+        document.getElementById("reset").click(function (e) {
+
+            e.preventDefault();
+            reset();
+        })
+        // нажатие на ссылку Удалить
+        async function Delete(id) {
+            await DeleteVoucher(id);
+            reset();
+        }
+        // отправка формы
+        document.forms["voucher"].addEventListener("submit", e => {
+            e.preventDefault();
+            const form = document.forms["voucher"];
+            const id = form.elements["id"].value;
+            const startDate = form.elements["startDate"].value;
+            const expirationDate = form.elements["expirationDate"].value;
+            const additionalServiceId = form.elements["additionalServiceId"].value;
+            const employessId = form.elements["employessId"].value;
+            const reservation = form.elements["reservation"].value;
+            const payment = form.elements["payment"].value;
+            if (id == 0)
+                CreateVoucher(startDate, expirationDate, additionalServiceId, employessId, reservation, payment);
+            else
+                EditVoucher(id, startDate, expirationDate, additionalServiceId, employessId, reservation, payment);
+        });
+        async function Edit(id) {
+            document.getElementById("typeCRUD").innerHTML = "Изменить:";
+            await GetVoucher(id);
+        }
+        // Получение списка видов топлива
+        async function GetEmployees() {
+            var listItems = "";
+            // отправляет запрос и получаем ответ
+            const voucher = await fetch('/api/voucher/emloyes', {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            // если запрос прошел нормально
+            if (voucher.ok === true) {
+                // получаем данные
+                const employess = await voucher.json();
+                listItems += "<option value=0 selected>(выбор)</option>";
+                employess.forEach(function (employes) {
+                    listItems += "<option value='" + employes.id + "'>" + employes.fio + "</option>";
+                });
+                document.getElementById("employessId").innerHTML = listItems;
+            }
+        }
+        async function GetAdditionalService() {
+            var listItems = "";
+            // отправляет запрос и получаем ответ
+            const voucher = await fetch('/api/voucher/additionalService', {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            // если запрос прошел нормально
+            if (voucher.ok === true) {
+                // получаем данные
+                const additionalServices = await voucher.json();
+                listItems += "<option value=0 selected>(выбор)</option>";
+                additionalServices.forEach(function (additionalService) {
+                    listItems += "<option value='" + additionalService.id + "'>" + additionalService.name+ "</option>";
+                });
+                document.getElementById("additionalServiceId").innerHTML = listItems;
+            }
+        }
+
+        GetEmployees();
+        GetAdditionalService();
+        // загрузка пользователей
+        GetVouchers();
+
+    </script>
+</body>
+</html>
